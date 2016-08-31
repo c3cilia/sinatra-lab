@@ -2,9 +2,9 @@
 
 ###What is it
 Sinatra is a DSL for quickly creating web applications in Ruby with minimal effort:
+
 ###Simple Hello world program 
 hello.rb
-
 ```
 require 'sinatra'
 
@@ -89,7 +89,7 @@ Dont know what this means 'By the way, unless you disable the path traversal att
 ###Sinatra::Base - Middleware, Libraries, and Modular Apps
 Defining your app at the `top-level` works well for `micro-apps` but has considerable drawbacks when building reusable components such as `Rack middleware`, `Rails metal`, simple libraries with a server component, or even `Sinatra extensions`. The `top-level` assumes a `micro-app style configuration` (e.g., a single application file, ./public and ./views directories, logging, exception detail page, etc.). That’s where Sinatra::Base comes into play:
 
-When you use Sinatra::Base you have to use rake server. 
+When you use Sinatra::Base you have to use rack server. 
 
 To get everything to work you require 
 * a `Gemfile`
@@ -135,6 +135,54 @@ class MyApp < Sinatra::Application
 end
 ```
 
+###Filters
+######Before and after blocks in sinatra
+`before do...end` is a block of code executed *before* every SaaS request. It can modify the request and response.
 
+```
+before do
+  @note = 'Hi!'
+  request.path_info = '/foo/bar/baz'
+end
 
+get '/foo/*' do
+  @note #=> 'Hi!'
+  params['splat'] #=> 'bar/baz'
+end
+```
+
+`after do...end` is executed *after* every SaaS request. It modify the request and response as well.
+Filters optionally take a pattern, causing them to be evaluated only if the request path matches that pattern:
+
+```
+before '/protected/*' do
+  authenticate!
+end
+
+after '/create/:slug' do |slug|
+  session[:last_slug] = slug
+end
+
+```
+Like routes, filters also take conditions:
+
+```
+before :agent => /Songbird/ do
+  # ...
+end
+
+after '/blog/*', :host_name => 'example.com' do
+  # ...
+end
+```
+
+###Using sessions 
+A session is used to keep state during requests. If activated, you have one session hash per user session:
+
+```
+enable :sessions
+```
+
+###Register 
+Modular applications must include any desired extensions explicitly by calling register ExtensionModule within the application’s class scope.
 
